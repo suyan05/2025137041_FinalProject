@@ -1,0 +1,36 @@
+튜토리얼 영상
+[Procedural voxel terrain generation in Unity #1 - Creating a cube (YouTube)]
+     (https://www.youtube.com/watch?v=lyDJPVp7Oc8)  
+  유니티에서 큐브부터 시작해 보xel 월드를 만드는 전체 시리즈. 퍼린 노이즈로 지형을 만드는 과정이 잘 설명되어 있습니다.
+
+[Unity Tutorial: Procedural Cave Generation Step by Step]
+     (https://www.youtube.com/watch?v=u2i8Ga4phBA)  
+  랜덤 워커 알고리즘을 이용해 동굴을 만드는 방법을 단계별로 보여줍니다.
+
+---
+
+깃허브 예제 프로젝트
+[Voxel-Experimentation (GitHub)]
+     (https://github.com/zacharybabers/Voxel-Experimentation)  
+  보xel 렌더링, 텍스처 아틀라스, 노이즈 기반 지형, 바이옴, 무한 청크 스트리밍, LOD까지 구현한 실험용 엔진.
+[Procedural-Cave-Generator (GitHub)]
+     (https://github.com/AK-Saigyouji/Procedural-Cave-Generator)  
+  유니티에서 동굴 메쉬를 절차적으로 생성하는 스크립트 모음. 커스터마이징 가능하며, 실제 프로젝트에 적용하기 좋습니다.
+
+---
+
+커뮤니티 자료
+- [Voxel world generation in Unity tutorial (Reddit r/VoxelGameDev)]
+     (https://www.reddit.com/r/VoxelGameDev/comments/p7c66l/voxel_world_generation_in_unity_tutorial/)
+마인크래프트 같은 월드를 유니티에서 만드는 방법을 정리한 커뮤니티 튜토리얼. 멀티스레딩과 바이옴 배치까지 다룹니다.
+
+---
+
+마인크래프트 월드 생성 알고리즘
+[Minecraft Wiki – World generation]
+     (https://minecraft.wiki/w/World_generation)  
+마인크래프트가 실제로 어떻게 시드, 노이즈, 바이옴, 구조물, 피처, 조명, 몹 스폰까지 단계별로 월드를 만드는지 상세히 설명.
+
+[Microsoft Learn – World Generation Overview (Bedrock Edition)]
+      (https://learn.microsoft.com/en-us/minecraft/creator/documents/world-generation?view=minecraft-bedrock-stable)  
+  베드락 에디션 기준으로 월드 생성 패스(지형 → 바이옴 → 구조물 → 피처 → 조명 → 최종)를 정리한 공식 문서.
