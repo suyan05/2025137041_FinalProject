@@ -15,12 +15,9 @@ public class Chunk : MonoBehaviour
     private List<Vector2> uvs = new List<Vector2>();
 
     private static readonly Vector3Int[] dirs = {
-        new Vector3Int( 1, 0, 0),
-        new Vector3Int(-1, 0, 0),
-        new Vector3Int( 0, 1, 0),
-        new Vector3Int( 0,-1, 0),
-        new Vector3Int( 0, 0, 1),
-        new Vector3Int( 0, 0,-1)
+        new Vector3Int(1,0,0), new Vector3Int(-1,0,0),
+        new Vector3Int(0,1,0), new Vector3Int(0,-1,0),
+        new Vector3Int(0,0,1), new Vector3Int(0,0,-1)
     };
 
     public void Init(ChunkData d, VoxelSettings settings, WorldSampler worldSampler)
@@ -31,6 +28,13 @@ public class Chunk : MonoBehaviour
 
         if (GetComponent<MeshFilter>() == null) gameObject.AddComponent<MeshFilter>();
         if (GetComponent<MeshRenderer>() == null) gameObject.AddComponent<MeshRenderer>();
+        if (GetComponent<MeshCollider>() == null) gameObject.AddComponent<MeshCollider>();
+
+        MeshRenderer renderer = GetComponent<MeshRenderer>();
+        if (renderer.material == null)
+        {
+            renderer.material = new Material(Shader.Find("Standard"));
+        }
     }
 
     public void BuildMesh(Dictionary<Vector3Int, Chunk> neighborChunks)
@@ -62,25 +66,6 @@ public class Chunk : MonoBehaviour
                         {
                             neighbor = data.blocks[nx, ny, nz];
                         }
-                        else if (neighborChunks != null)
-                        {
-                            Vector3Int neighborCoord = data.coord;
-
-                            if (nx < 0) neighborCoord += new Vector3Int(-1, 0, 0);
-                            if (nx >= data.sizeX) neighborCoord += new Vector3Int(1, 0, 0);
-                            if (nz < 0) neighborCoord += new Vector3Int(0, 0, -1);
-                            if (nz >= data.sizeZ) neighborCoord += new Vector3Int(0, 0, 1);
-
-                            if (neighborChunks.TryGetValue(neighborCoord, out Chunk neighborChunk))
-                            {
-                                int lx = (nx + data.sizeX) % data.sizeX;
-                                int lz = (nz + data.sizeZ) % data.sizeZ;
-                                if (ny >= 0 && ny < data.height)
-                                {
-                                    neighbor = neighborChunk.data.blocks[lx, ny, lz];
-                                }
-                            }
-                        }
 
                         bool addFace = !IsSolid(neighbor);
                         if (id == BlockId.Water)
@@ -95,6 +80,12 @@ public class Chunk : MonoBehaviour
             }
         }
 
+        if (verts.Count == 0)
+        {
+            Debug.LogWarning($"Chunk {data.coord} has no vertices, skipping mesh build.");
+            return;
+        }
+
         Mesh mesh = new Mesh();
         mesh.indexFormat = verts.Count > 65535 ? UnityEngine.Rendering.IndexFormat.UInt32
                                                : UnityEngine.Rendering.IndexFormat.UInt16;
@@ -104,6 +95,7 @@ public class Chunk : MonoBehaviour
         mesh.RecalculateNormals();
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
+        GetComponent<MeshCollider>().sharedMesh = mesh; // MeshCollider 적용
     }
 
     private bool IsSolid(BlockId id)
@@ -124,14 +116,18 @@ public class Chunk : MonoBehaviour
         tris.Add(vCount + 2);
         tris.Add(vCount + 3);
 
-        // 블록별 텍스처 UV 매핑
+        // UV 매핑 (기본 정사각형)
+        uvs.Add(new Vector2(0, 0));
+        uvs.Add(new Vector2(1, 0));
+        uvs.Add(new Vector2(1, 1));
+        uvs.Add(new Vector2(0, 1));
+
+        // 텍스처 적용
         Texture2D tex = BlockTextureManager.GetTexture(id);
         if (tex != null)
         {
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(0, 1));
+            MeshRenderer renderer = GetComponent<MeshRenderer>();
+            renderer.material.mainTexture = tex;
         }
     }
 

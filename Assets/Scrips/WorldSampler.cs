@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-
 /// <summary>
-/// 월드 샘플링: 높이맵, 강, 동굴, 바이옴 등을 계산하는 클래스
+/// 월드 샘플링: 높이맵, 강, 동굴, 바이옴, 광석 등을 계산하는 클래스
 /// </summary>
 public class WorldSampler
 {
@@ -19,7 +16,6 @@ public class WorldSampler
     // 높이맵 계산
     public int SampleHeight(int wx, int wz)
     {
-        // 기본 높이맵 계산
         float nx = (wx + s.noiseOffset.x) * s.heightNoiseScale;
         float nz = (wz + s.noiseOffset.z) * s.heightNoiseScale;
 
@@ -27,14 +23,13 @@ public class WorldSampler
         h += NoiseUtil.Perlin2D(nx * 2.1f, nz * 2.1f, s.worldSeed + 11) * (s.heightNoiseAmp * 0.5f);
         h += NoiseUtil.Perlin2D(nx * 4.3f, nz * 4.3f, s.worldSeed + 29) * (s.heightNoiseAmp * 0.25f);
 
-        // 산맥 추가 (리지 노이즈 기반)
+        // 산맥 추가
         float mx = (wx + s.noiseOffset.x) * s.mountainNoiseScale;
         float mz = (wz + s.noiseOffset.z) * s.mountainNoiseScale;
         float ridge = NoiseUtil.Ridge(NoiseUtil.Perlin2D(mx, mz, s.worldSeed + 999));
 
         if (ridge > s.mountainThreshold)
         {
-            // 뾰족한 능선 효과: ridge 값이 높을수록 고도 급상승
             h += (ridge - s.mountainThreshold) * s.mountainNoiseAmp;
         }
 
@@ -64,6 +59,7 @@ public class WorldSampler
     public bool IsCave(int wx, int wy, int wz)
     {
         if (wy > s.seaLevel + 6) return false;
+
         float nx = (wx + s.noiseOffset.x) * s.caveNoiseScale;
         float ny = (wy + s.noiseOffset.y) * s.caveNoiseScale;
         float nz = (wz + s.noiseOffset.z) * s.caveNoiseScale;
@@ -86,6 +82,7 @@ public class WorldSampler
         return dryness > 0.62f && heightAt <= s.seaLevel + 2;
     }
 
+    // 광석 샘플링
     public BlockId SampleOre(int wx, int wy, int wz)
     {
         float n = NoiseUtil.Perlin3D(
@@ -94,13 +91,12 @@ public class WorldSampler
             (wz + s.noiseOffset.z) * s.oreNoiseScale,
             s.worldSeed + 2025);
 
-        // 깊이에 따라 광석 배치
         if (wy <= s.diamondMaxHeight && n < s.diamondChance) return BlockId.DiamondOre;
         if (wy <= s.goldMaxHeight && n < s.goldChance) return BlockId.GoldOre;
         if (wy <= s.ironMaxHeight && n < s.ironChance) return BlockId.IronOre;
         if (wy <= s.coalMaxHeight && n < s.coalChance) return BlockId.CoalOre;
 
-        return BlockId.Stone; // 기본은 돌
+        return BlockId.Stone;
     }
 
     // 토양 깊이 샘플링

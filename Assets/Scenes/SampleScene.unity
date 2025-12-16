@@ -459,25 +459,33 @@ MonoBehaviour:
     chunkSizeX: 16
     chunkSizeZ: 16
     chunkHeight: 128
-    worldSeed: 730829
+    worldSeed: 123467
     baseHeight: 50
-    heightNoiseScale: 0.0075
-    heightNoiseAmp: 18
+    heightNoiseScale: 0.01
+    heightNoiseAmp: 30
     biomeScale: 0.0025
     soilDepthMin: 3
     soilDepthMax: 6
     mountainNoiseScale: 0.0015
-    mountainNoiseAmp: 40
+    mountainNoiseAmp: 120
     mountainThreshold: 0.65
     riverNoiseScale: 0.002
-    riverWidth: 0.08
-    riverDepth: 6
+    riverWidth: 0.15
+    riverDepth: 10
     caveNoiseScale: 0.035
     caveThreshold: 0.58
     caveRidgeScale: 0.012
-    seaLevel: 48
+    oreNoiseScale: 0.05
+    coalChance: 0.12
+    ironChance: 0.08
+    goldChance: 0.04
+    diamondChance: 0.02
+    coalMaxHeight: 128
+    ironMaxHeight: 80
+    goldMaxHeight: 40
+    diamondMaxHeight: 20
+    seaLevel: 15
     noiseOffset: {x: 1000, y: 1000, z: 1000}
-  chunkMaterial: {fileID: 2100000, guid: ef5fa5efefd09ff4f9a678ba4740b8cc, type: 2}
   radiusChunks: 4
 --- !u!4 &2119356742
 Transform:
