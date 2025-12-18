@@ -1,26 +1,27 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public static class BlockTextureManager
+public class BlockTextureManager : MonoBehaviour
 {
-    private static Dictionary<BlockId, Texture2D> textures = new Dictionary<BlockId, Texture2D>();
+    [Header("Block Materials (Inspector ¿¬°á)")]
+    public Material grassMaterial;
+    public Material dirtMaterial;
+    public Material sandMaterial;
+    public Material waterMaterial;
 
-    public static void LoadTextures()
+    private static Dictionary<BlockId, Material> materials = new Dictionary<BlockId, Material>();
+
+    void Awake()
     {
-        textures[BlockId.Grass] = Resources.Load<Texture2D>("Textures/Blocks/Grass");
-        textures[BlockId.Dirt] = Resources.Load<Texture2D>("Textures/Blocks/Dirt");
-        textures[BlockId.Stone] = Resources.Load<Texture2D>("Textures/Blocks/Stone");
-        textures[BlockId.Sand] = Resources.Load<Texture2D>("Textures/Blocks/Sand");
-        textures[BlockId.Water] = Resources.Load<Texture2D>("Textures/Blocks/Water");
-        textures[BlockId.CoalOre] = Resources.Load<Texture2D>("Textures/Blocks/CoalOre");
-        textures[BlockId.IronOre] = Resources.Load<Texture2D>("Textures/Blocks/IronOre");
-        textures[BlockId.GoldOre] = Resources.Load<Texture2D>("Textures/Blocks/GoldOre");
-        textures[BlockId.DiamondOre] = Resources.Load<Texture2D>("Textures/Blocks/DiamondOre");
+        materials[BlockId.Grass] = grassMaterial;
+        materials[BlockId.Dirt] = dirtMaterial;
+        materials[BlockId.Sand] = sandMaterial;
+        materials[BlockId.Water] = waterMaterial;
     }
 
-    public static Texture2D GetTexture(BlockId id)
+    public static Material GetMaterial(BlockId id)
     {
-        if (textures.ContainsKey(id) && textures[id] != null) return textures[id];
-        return Resources.Load<Texture2D>("Textures/Blocks/Default");
+        if (materials.ContainsKey(id)) return materials[id];
+        return null;
     }
 }

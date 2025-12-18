@@ -1,9 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// 청크 오브젝트: 데이터와 메쉬를 관리
-/// </summary>
 public class Chunk : MonoBehaviour
 {
     public ChunkData data;
@@ -33,7 +30,7 @@ public class Chunk : MonoBehaviour
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         if (renderer.material == null)
         {
-            renderer.material = new Material(Shader.Find("Standard"));
+            renderer.material = BlockTextureManager.GetMaterial(BlockId.Grass);
         }
     }
 
@@ -59,7 +56,6 @@ public class Chunk : MonoBehaviour
                         int nz = z + dirs[d].z;
 
                         BlockId neighbor = BlockId.Air;
-
                         if (nx >= 0 && nx < data.sizeX &&
                             ny >= 0 && ny < data.height &&
                             nz >= 0 && nz < data.sizeZ)
@@ -80,11 +76,7 @@ public class Chunk : MonoBehaviour
             }
         }
 
-        if (verts.Count == 0)
-        {
-            Debug.LogWarning($"Chunk {data.coord} has no vertices, skipping mesh build.");
-            return;
-        }
+        if (verts.Count == 0) return;
 
         Mesh mesh = new Mesh();
         mesh.indexFormat = verts.Count > 65535 ? UnityEngine.Rendering.IndexFormat.UInt32
@@ -95,7 +87,7 @@ public class Chunk : MonoBehaviour
         mesh.RecalculateNormals();
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
-        GetComponent<MeshCollider>().sharedMesh = mesh; // MeshCollider 적용
+        GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 
     private bool IsSolid(BlockId id)
@@ -109,25 +101,19 @@ public class Chunk : MonoBehaviour
         Vector3[] faceVerts = GetFaceVertices(dir, basePos);
         verts.AddRange(faceVerts);
 
-        tris.Add(vCount);
-        tris.Add(vCount + 1);
-        tris.Add(vCount + 2);
-        tris.Add(vCount);
-        tris.Add(vCount + 2);
-        tris.Add(vCount + 3);
+        tris.Add(vCount); tris.Add(vCount + 1); tris.Add(vCount + 2);
+        tris.Add(vCount); tris.Add(vCount + 2); tris.Add(vCount + 3);
 
-        // UV 매핑 (기본 정사각형)
         uvs.Add(new Vector2(0, 0));
         uvs.Add(new Vector2(1, 0));
         uvs.Add(new Vector2(1, 1));
         uvs.Add(new Vector2(0, 1));
 
-        // 텍스처 적용
-        Texture2D tex = BlockTextureManager.GetTexture(id);
-        if (tex != null)
+        Material mat = BlockTextureManager.GetMaterial(id);
+        if (mat != null)
         {
             MeshRenderer renderer = GetComponent<MeshRenderer>();
-            renderer.material.mainTexture = tex;
+            renderer.material = mat;
         }
     }
 

@@ -9,7 +9,10 @@ public enum BlockId
 public class ChunkData
 {
     public Vector3Int coord;
-    public int sizeX, sizeZ, height;
+    public int sizeX;
+    public int sizeZ;
+    public int height;
+
     public BlockId[,,] blocks;
 
     public ChunkData(Vector3Int coord, int sizeX, int sizeZ, int height)
