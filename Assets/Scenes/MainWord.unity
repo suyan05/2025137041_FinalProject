@@ -151,11 +151,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37ba9e547abc04a44a09ad98555d3c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grassMaterial: {fileID: 2100000, guid: aa53f0ef243fb944aab0272b5b2c2c99, type: 2}
-  dirtMaterial: {fileID: 2100000, guid: 63e7dbb9af21b4e4894bffd0bb6bc0a6, type: 2}
-  StoneMaterial: {fileID: 2100000, guid: 278cc59544cc14146a7393e33d28c27c, type: 2}
-  sandMaterial: {fileID: 2100000, guid: 11a8417b62d0a57469dfeb13c0d0cf17, type: 2}
-  waterMaterial: {fileID: 2100000, guid: 01a71cf7c59d5ec42810dc58d0791766, type: 2}
+  grassTexture: {fileID: 2800000, guid: ac50151d1c0279c448b2b937190c68ee, type: 3}
+  dirtTexture: {fileID: 2800000, guid: 16047c66be22a2446b16e5941c747e53, type: 3}
+  sandTexture: {fileID: 2800000, guid: 4db270139a20fc14485c0c30d7a9f938, type: 3}
+  waterTexture: {fileID: 2800000, guid: 68bb466c23d4ade40a5729bef7120d4f, type: 3}
 --- !u!4 &111835843
 Transform:
   m_ObjectHideFlags: 0
