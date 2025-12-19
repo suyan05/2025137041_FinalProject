@@ -16,14 +16,25 @@ public class WorldManager : MonoBehaviour
     // 최적화: 프레임당 처리할 블록 개수
     public int blockBatchSize = 10;
 
+    // 오브젝트 풀
+    private Queue<GameObject> blockPool = new Queue<GameObject>();
+    public int initialPoolSize = 500;
+
     void Start()
     {
-        // WorldSampler 초기화 (지형 샘플링용)
         sampler = new WorldSampler(settings);
 
-        // 초기 맵 로딩 코루틴 실행
+        // 초기 풀 생성
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.SetActive(false);
+            blockPool.Enqueue(cube);
+        }
+
         StartCoroutine(InitializeWorld());
     }
+
 
     IEnumerator InitializeWorld()
     {
@@ -31,7 +42,6 @@ public class WorldManager : MonoBehaviour
         PrecomputeChunk(originCoord);
         yield return StartCoroutine(LoadChunkGradually(originCoord));
 
-        // 주변 청크 미리 로딩
         Vector3Int[] initialCoords = {
             new Vector3Int(1,0,0), new Vector3Int(-1,0,0),
             new Vector3Int(0,0,1), new Vector3Int(0,0,-1)
@@ -45,12 +55,106 @@ public class WorldManager : MonoBehaviour
         SpawnPlayerAtTop(chunkDatas[originCoord]);
     }
 
-
     void Update()
     {
         if (playerInstance == null) return;
         UpdateChunksByDistance();
     }
+
+    IEnumerator LoadChunkGradually(Vector3Int coord)
+    {
+        if (!chunkDatas.ContainsKey(coord)) yield break;
+        if (playerInstance == null) yield break;
+
+        ChunkData data = chunkDatas[coord];
+        GameObject chunkObj = new GameObject($"Chunk_{coord.x}_{coord.z}");
+        chunkObj.transform.parent = transform;
+        loadedChunks[coord] = chunkObj;
+
+        List<GameObject> blocks = new List<GameObject>();
+
+        for (int x = 0; x < data.sizeX; x++)
+        {
+            for (int y = 0; y < data.height; y++)
+            {
+                for (int z = 0; z < data.sizeZ; z++)
+                {
+                    BlockId id = data.blocks[x, y, z];
+                    if (id == BlockId.Air) continue;
+
+                    Vector3 pos = new Vector3(
+                        coord.x * data.sizeX + x,
+                        y,
+                        coord.z * data.sizeZ + z
+                    );
+
+                    GameObject cube = GetBlockFromPool();
+                    cube.transform.position = pos;
+                    cube.transform.parent = chunkObj.transform;
+
+                    Material mat = BlockTextureManager.GetMaterial(id);
+                    if (mat != null) cube.GetComponent<Renderer>().material = mat;
+
+                    cube.SetActive(false);
+                    blocks.Add(cube);
+                }
+            }
+        }
+
+        // 가까운 블록부터 순차적으로 활성화
+        blocks.Sort((a, b) => {
+            float da = Vector3.Distance(playerInstance.transform.position, a.transform.position);
+            float db = Vector3.Distance(playerInstance.transform.position, b.transform.position);
+            return da.CompareTo(db);
+        });
+
+        int count = 0;
+        foreach (var block in blocks)
+        {
+            if (block != null) block.SetActive(true);
+            count++;
+            if (count % blockBatchSize == 0) yield return null;
+        }
+    }
+
+    IEnumerator UnloadChunkGradually(Vector3Int coord)
+    {
+        if (!loadedChunks.ContainsKey(coord)) yield break;
+        GameObject chunkObj = loadedChunks[coord];
+
+        List<Transform> blocks = new List<Transform>();
+        foreach (Transform child in chunkObj.transform)
+        {
+            if (child != null) blocks.Add(child);
+        }
+
+        blocks.Sort((a, b) => {
+            float da = Vector3.Distance(playerInstance.transform.position, a.position);
+            float db = Vector3.Distance(playerInstance.transform.position, b.position);
+            return db.CompareTo(da);
+        });
+
+        int count = 0;
+        foreach (var block in blocks)
+        {
+            if (block != null)
+            {
+                ReturnBlockToPool(block.gameObject);
+            }
+            count++;
+            if (count % blockBatchSize == 0) yield return null;
+        }
+
+        Destroy(chunkObj);
+        loadedChunks.Remove(coord);
+
+        // 메모리 관리: chunkDatas에서도 제거
+        if (chunkDatas.ContainsKey(coord))
+        {
+            chunkDatas.Remove(coord);
+        }
+    }
+
 
     void SpawnPlayerAtTop(ChunkData data)
     {
@@ -203,65 +307,7 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 청크를 플레이어와의 거리 기준으로 블록 단위 로딩 (프레임당 batchSize 처리)
-    /// </summary>
-    IEnumerator LoadChunkGradually(Vector3Int coord)
-    {
-        if (!chunkDatas.ContainsKey(coord)) yield break;
-        if (playerInstance == null) yield break;
 
-        ChunkData data = chunkDatas[coord];
-        GameObject chunkObj = new GameObject($"Chunk_{coord.x}_{coord.z}");
-        chunkObj.transform.parent = transform;
-        loadedChunks[coord] = chunkObj;
-
-        List<GameObject> blocks = new List<GameObject>();
-
-        for (int x = 0; x < data.sizeX; x++)
-        {
-            for (int y = 0; y < data.height; y++)
-            {
-                for (int z = 0; z < data.sizeZ; z++)
-                {
-                    BlockId id = data.blocks[x, y, z];
-                    if (id == BlockId.Air) continue;
-
-                    Vector3 pos = new Vector3(
-                        coord.x * data.sizeX + x,
-                        y,
-                        coord.z * data.sizeZ + z
-                    );
-
-                    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.transform.position = pos;
-                    cube.transform.parent = chunkObj.transform;
-
-                    // Inspector에서 연결된 머티리얼 적용
-                    Material mat = BlockTextureManager.GetMaterial(id);
-                    if (mat != null) cube.GetComponent<Renderer>().material = mat;
-
-                    cube.SetActive(false);
-                    blocks.Add(cube);
-                }
-            }
-        }
-
-        // 가까운 블록부터 순차적으로 활성화
-        blocks.Sort((a, b) => {
-            float da = Vector3.Distance(playerInstance.transform.position, a.transform.position);
-            float db = Vector3.Distance(playerInstance.transform.position, b.transform.position);
-            return da.CompareTo(db);
-        });
-
-        int count = 0;
-        foreach (var block in blocks)
-        {
-            if (block != null) block.SetActive(true);
-            count++;
-            if (count % blockBatchSize == 0) yield return null;
-        }
-    }
 
     /// <summary>
     /// 청크 데이터만 계산
@@ -273,48 +319,6 @@ public class WorldManager : MonoBehaviour
         chunkDatas[coord] = data;
     }
 
-    /// <summary>
-    /// 청크를 플레이어와의 거리 기준으로 블록 단위 언로딩 (프레임당 batchSize 처리)
-    /// </summary>
-    IEnumerator UnloadChunkGradually(Vector3Int coord)
-    {
-        if (!loadedChunks.ContainsKey(coord)) yield break;
-        GameObject chunkObj = loadedChunks[coord];
-
-        List<Transform> blocks = new List<Transform>();
-        foreach (Transform child in chunkObj.transform)
-        {
-            if (child != null) blocks.Add(child);
-        }
-
-        // 플레이어와 먼 블록부터 정렬
-        blocks.Sort((a, b) => {
-            if (a == null && b == null) return 0;
-            if (a == null) return 1;
-            if (b == null) return -1;
-            float da = Vector3.Distance(playerInstance.transform.position, a.position);
-            float db = Vector3.Distance(playerInstance.transform.position, b.position);
-            return db.CompareTo(da); // 먼 블록 먼저
-        });
-
-        // 먼 블록부터 순차적으로 삭제 (batchSize 단위)
-        int count = 0;
-        foreach (var block in blocks)
-        {
-            if (block != null)
-            {
-                Destroy(block.gameObject);
-            }
-            count++;
-            if (count % blockBatchSize == 0)
-            {
-                yield return null; // batchSize마다 한 프레임 쉬기
-            }
-        }
-
-        Destroy(chunkObj);
-        loadedChunks.Remove(coord);
-    }
 
     /// <summary>
     /// 기본 지형 생성 (땅/흙/잔디/모래/물)
@@ -344,13 +348,9 @@ public class WorldManager : MonoBehaviour
                     if (wy == height)
                     {
                         if (sampler.IsSandy(wx, wz, height))
-                        {
                             data.blocks[x, y, z] = BlockId.Sand;
-                        }
                         else
-                        {
                             data.blocks[x, y, z] = BlockId.Grass;
-                        }
                     }
                     else if (wy < height && wy >= height - soilDepth)
                     {
@@ -364,4 +364,27 @@ public class WorldManager : MonoBehaviour
             }
         }
     }
+
+    GameObject GetBlockFromPool()
+    {
+        if (blockPool.Count > 0)
+        {
+            return blockPool.Dequeue();
+        }
+        else
+        {
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.SetActive(false);
+            return cube;
+        }
+    }
+
+    void ReturnBlockToPool(GameObject block)
+    {
+        block.SetActive(false);
+        block.transform.SetParent(null);
+        blockPool.Enqueue(block);
+    }
+
+
 }

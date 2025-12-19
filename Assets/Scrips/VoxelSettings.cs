@@ -1,4 +1,13 @@
 using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class OreEntry
+{
+    public BlockId blockId;
+    public int maxHeight;
+    [Range(0f, 1f)] public float chance;
+}
 
 [System.Serializable]
 public class VoxelSettings
@@ -10,6 +19,7 @@ public class VoxelSettings
 
     [Header("월드 시드")]
     public int worldSeed = 12345;
+    public bool useRandomOffset = false;
 
     [Header("지형 Settings")]
     public float baseHeight = 50f;
@@ -20,6 +30,7 @@ public class VoxelSettings
     public float biomeScale = 0.0025f;
     public int soilDepthMin = 3;
     public int soilDepthMax = 6;
+    public float sandThreshold = 0.62f;
 
     [Header("산 Settings")]
     public float mountainNoiseScale = 0.0015f;
@@ -38,20 +49,23 @@ public class VoxelSettings
 
     [Header("광석 Settings")]
     public float oreNoiseScale = 0.05f;
-    public float coalChance = 0.12f;
-    public float ironChance = 0.08f;
-    public float goldChance = 0.04f;
-    public float diamondChance = 0.02f;
-
-    [Header("광석 최대 높이")]
-    public int coalMaxHeight = 128;
-    public int ironMaxHeight = 80;
-    public int goldMaxHeight = 40;
-    public int diamondMaxHeight = 20;
+    public List<OreEntry> oreEntries = new List<OreEntry>();
 
     [Header("수면 Settings")]
     public int seaLevel = 48;
 
     [Header("노이즈 오프셋")]
     public Vector3 noiseOffset = new Vector3(1000, 1000, 1000);
+
+    public void InitializeOffsets()
+    {
+        if (useRandomOffset)
+        {
+            noiseOffset = new Vector3(
+                Random.Range(0, 10000),
+                Random.Range(0, 10000),
+                Random.Range(0, 10000)
+            );
+        }
+    }
 }

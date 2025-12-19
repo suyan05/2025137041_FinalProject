@@ -151,10 +151,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37ba9e547abc04a44a09ad98555d3c73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grassTexture: {fileID: 2800000, guid: ac50151d1c0279c448b2b937190c68ee, type: 3}
-  dirtTexture: {fileID: 2800000, guid: 16047c66be22a2446b16e5941c747e53, type: 3}
-  sandTexture: {fileID: 2800000, guid: 4db270139a20fc14485c0c30d7a9f938, type: 3}
-  waterTexture: {fileID: 2800000, guid: 68bb466c23d4ade40a5729bef7120d4f, type: 3}
+  blockMaterials:
+  - blockId: 1
+    material: {fileID: 2100000, guid: aa53f0ef243fb944aab0272b5b2c2c99, type: 2}
+  - blockId: 2
+    material: {fileID: 2100000, guid: 63e7dbb9af21b4e4894bffd0bb6bc0a6, type: 2}
+  - blockId: 3
+    material: {fileID: 0}
+  - blockId: 4
+    material: {fileID: 2100000, guid: 11a8417b62d0a57469dfeb13c0d0cf17, type: 2}
+  - blockId: 5
+    material: {fileID: 2100000, guid: 01a71cf7c59d5ec42810dc58d0791766, type: 2}
 --- !u!4 &111835843
 Transform:
   m_ObjectHideFlags: 0
@@ -371,8 +378,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9f46070cc09f5f42b02b5c1864b393c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensitivityX: 2
-  sensitivityY: 2
+  sensitivityX: 5
+  sensitivityY: 5
+  invertY: 0
   playerBody: {fileID: 0}
 --- !u!114 &751257425
 MonoBehaviour:
@@ -524,12 +532,14 @@ MonoBehaviour:
     chunkSizeZ: 16
     chunkHeight: 128
     worldSeed: 123467
+    useRandomOffset: 0
     baseHeight: 50
     heightNoiseScale: 0.01
     heightNoiseAmp: 30
     biomeScale: 0.0025
     soilDepthMin: 3
     soilDepthMax: 6
+    sandThreshold: 0.62
     mountainNoiseScale: 0.0015
     mountainNoiseAmp: 120
     mountainThreshold: 0.65
@@ -540,19 +550,13 @@ MonoBehaviour:
     caveThreshold: 0.58
     caveRidgeScale: 0.012
     oreNoiseScale: 0.05
-    coalChance: 0.12
-    ironChance: 0.08
-    goldChance: 0.04
-    diamondChance: 0.02
-    coalMaxHeight: 128
-    ironMaxHeight: 80
-    goldMaxHeight: 40
-    diamondMaxHeight: 20
+    oreEntries: []
     seaLevel: 15
     noiseOffset: {x: 1000, y: 1000, z: 1000}
   playerPrefab: {fileID: 9164304308912988980, guid: 7c4e9a2842220ca489e8a0fac4dc4d0c,
     type: 3}
   blockBatchSize: 10
+  initialPoolSize: 500
 --- !u!4 &2119356742
 Transform:
   m_ObjectHideFlags: 0
