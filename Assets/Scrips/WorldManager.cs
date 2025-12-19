@@ -92,6 +92,19 @@ public class WorldManager : MonoBehaviour
                     cube.transform.position = pos;
                     cube.transform.parent = chunkObj.transform;
 
+                    // 태그 자동 지정
+                    cube.tag = "Block";
+
+                    // Block 컴포넌트 자동 추가 및 설정
+                    Block blockComponent = cube.GetComponent<Block>();
+                    if (blockComponent == null)
+                    {
+                        blockComponent = cube.AddComponent<Block>();
+                    }
+                    blockComponent.blockId = id;
+                    blockComponent.maxHealth = GetBlockHealth(id);
+
+                    // 머티리얼 적용
                     Material mat = BlockTextureManager.GetMaterial(id);
                     if (mat != null) cube.GetComponent<Renderer>().material = mat;
 
@@ -374,10 +387,12 @@ public class WorldManager : MonoBehaviour
         else
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.tag = "Block"; // 태그 지정
             cube.SetActive(false);
             return cube;
         }
     }
+
 
     void ReturnBlockToPool(GameObject block)
     {

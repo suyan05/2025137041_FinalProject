@@ -1,10 +1,6 @@
 using UnityEngine;
 
-public enum BlockId
-{
-    Air, Grass, Dirt, Stone, Sand, Water,
-    CoalOre, IronOre, GoldOre, DiamondOre
-}
+
 
 public class ChunkData
 {
