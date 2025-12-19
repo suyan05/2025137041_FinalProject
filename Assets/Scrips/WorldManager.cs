@@ -378,6 +378,14 @@ public class WorldManager : MonoBehaviour
         }
     }
 
+
+    void ReturnBlockToPool(GameObject block)
+    {
+        block.SetActive(false);
+        block.transform.SetParent(null);
+        blockPool.Enqueue(block);
+    }
+
     GameObject GetBlockFromPool()
     {
         if (blockPool.Count > 0)
@@ -387,19 +395,27 @@ public class WorldManager : MonoBehaviour
         else
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.tag = "Block"; // 태그 지정
+            cube.tag = "Block"; // 태그 자동 지정
             cube.SetActive(false);
+
+            // Block 컴포넌트 자동 추가
+            Block blockComponent = cube.AddComponent<Block>();
+            blockComponent.blockId = BlockId.Air;
+            blockComponent.maxHealth = 1;
+
             return cube;
         }
     }
 
-
-    void ReturnBlockToPool(GameObject block)
+    int GetBlockHealth(BlockId blockId)
     {
-        block.SetActive(false);
-        block.transform.SetParent(null);
-        blockPool.Enqueue(block);
+        switch (blockId)
+        {
+            case BlockId.Stone: return 5;
+            case BlockId.Dirt: return 2;
+            case BlockId.Sand: return 2;
+            case BlockId.Wood: return 3;
+            default: return 1;
+        }
     }
-
-
 }
